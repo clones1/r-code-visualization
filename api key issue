@@ -1,0 +1,65 @@
+# Get forecast data for a given city list
+get_weather_forecaset_by_cities <- function(city_names){
+    df <- data.frame()
+    for (city_name in city_names){
+        # Forecast API URL
+        forecast_url <- 'https://api.openweathermap.org/data/2.5/forecast'
+        # Create query parameters
+        forecast_query <- list(q = city_name, appid = "1c9f5b33bc2afd87aaf8f3d14ca4c829", units="metric")
+        # Make HTTP GET call for the given city
+        response <- GET(forecast_url, query=forecast_query)
+        # Note that the 5-day forecast JSON result is a list of lists. You can print the reponse to check the results
+        json_list <- content(response, as="parsed")
+        results <- json_list$list
+        # Loop the json result
+        for(result in results) {
+            city <- c(city, city_name)
+            weather <- c(weather, result$weather[[1]]$main)
+            visibility <- c(visibility, result$visibility)
+            temp <- c(temp, result$main$temp)
+            temp_min <- c(temp_min, result$main$temp_min)
+            temp_max <- c(temp_max, result$main$temp_max)
+            pressure <- c(pressure, result$main$pressure)
+            humidity <- c(humidity, result$main$humidity)
+            wind_speed <- c(wind_speed, result$wind$speed)
+            wind_deg <- c(wind_deg, result$wind$deg)
+            forecast_datetime <- c(forecast_datetime, result$dt_txt)
+            season <- c(season, result$season)          
+        }
+        
+        # Add the R Lists into a data frame
+        df <- data.frame(city=city,
+                         weather=weather, 
+                         visibility=visibility, 
+                         temp=temp, 
+                         temp_min=temp_min, 
+                         temp_max=temp_max, 
+                         pressure=pressure, 
+                         humidity=humidity, 
+                         wind_speed=wind_speed, 
+                         wind_deg=wind_deg,                         
+                         forecast_datetime = forecast_datetime, 
+                         season=season)
+    }
+    
+    # Return a data frame
+    return(df)
+    
+}
+
+
+#Complete and call get_weather_forecaset_by_cities function with a list of cities, and write the data frame into a csv file called cities_weather_forecast.csv
+cities <- c("Seoul", "Washington, D.C.", "Paris", "Suzhou")
+cities_weather_df <- get_weather_forecaset_by_cities(cities)
+
+###############ERROR MESSAGE I'M GETTING WHEN RUNNING LINES 52-53: ############################################
+#Error in data.frame(city = city, weather = weather, visibility = visibility, : arguments imply differing number of rows: 40, 0
+#Traceback:
+#
+#1. get_weather_forecaset_by_cities(cities)
+#2. data.frame(city = city, weather = weather, visibility = visibility, 
+# .     temp = temp, temp_min = temp_min, temp_max = temp_max, pressure = pressure, 
+#.     humidity = humidity, wind_speed = wind_speed, wind_deg = wind_deg, 
+# .     forecast_datetime = forecast_datetime, season = season)   # at line 31-42 of file <text>
+#3. stop(gettextf("arguments imply differing number of rows: %s", 
+# .     paste(unique(nrows), collapse = ", ")), domain = NA)
